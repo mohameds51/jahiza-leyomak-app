@@ -1,0 +1,4 @@
+import {db} from '../../../../lib/server/db';
+import {hash,setSession} from '../../../../lib/server/auth';
+export const runtime='nodejs';
+export async function POST(request:Request){try{const {token}=await request.json();if(typeof token!=='string'||token.length>200)return Response.json({error:'الرابط غير صحيح'},{status:400});const {rows}=await db().query("UPDATE login_tokens SET used_at=now() WHERE token_hash=$1 AND used_at IS NULL AND expires_at>now() RETURNING user_id",[hash(token)]);if(!rows.length)return Response.json({error:'الرابط منتهي أو مستخدم'},{status:401});const {rows:allowed}=await db().query('SELECT 1 FROM entitlements WHERE user_id=$1 AND active=true',[rows[0].user_id]);if(!allowed.length)return Response.json({error:'لا يوجد اشتراك مفعّل'},{status:403});await setSession(rows[0].user_id);return Response.json({ok:true})}catch{return Response.json({error:'تعذر تسجيل الدخول'},{status:500})}}

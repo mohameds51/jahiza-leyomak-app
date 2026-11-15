@@ -1,0 +1,4 @@
+import {currentUser,deny} from '../../../lib/server/auth';
+import {db} from '../../../lib/server/db';
+export const runtime='nodejs';
+export async function POST(request:Request){try{const user=await currentUser();if(!user)return deny();const bytes=Buffer.from(await request.arrayBuffer());if(!bytes.length||bytes.length>450000)return Response.json({error:'الصورة تتجاوز الحد المسموح (450 كيلوبايت)'},{status:413});if(bytes[0]!==0xff||bytes[1]!==0xd8||bytes[2]!==0xff)return Response.json({error:'صيغة الصورة غير مدعومة'},{status:400});const {rows:count}=await db().query('SELECT count(*)::int AS n FROM images WHERE user_id=$1',[user.id]);if(count[0].n>=30)return Response.json({error:'وصلتِ للحد الأقصى للصور'},{status:409});const {rows}=await db().query("INSERT INTO images(user_id,content,content_type) VALUES($1,$2,'image/jpeg') RETURNING id",[user.id,bytes]);return Response.json({id:rows[0].id})}catch{return Response.json({error:'تعذر رفع الصورة'},{status:503})}}

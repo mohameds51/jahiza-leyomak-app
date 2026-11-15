@@ -1,0 +1,11 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TABLE IF NOT EXISTS users(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),email text UNIQUE NOT NULL,created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS entitlements(user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,active boolean NOT NULL DEFAULT false,source text NOT NULL DEFAULT 'manual',paddle_transaction_id text UNIQUE,updated_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS login_tokens(token_hash text PRIMARY KEY,user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at timestamptz NOT NULL,used_at timestamptz);
+CREATE TABLE IF NOT EXISTS sessions(token_hash text PRIMARY KEY,user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS user_state(user_id uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,data jsonb NOT NULL DEFAULT '{}'::jsonb,revision integer NOT NULL DEFAULT 0,updated_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS images(id uuid PRIMARY KEY,user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,content bytea NOT NULL,content_type text NOT NULL DEFAULT 'image/jpeg',created_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS images_user_idx ON images(user_id);
+CREATE TABLE IF NOT EXISTS webhook_events(event_id text PRIMARY KEY,received_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS auth_requests(id bigserial PRIMARY KEY,email_hash text NOT NULL,ip_hash text NOT NULL,created_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS auth_requests_recent_idx ON auth_requests(created_at);

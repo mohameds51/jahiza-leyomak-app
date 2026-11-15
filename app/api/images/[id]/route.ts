@@ -1,0 +1,5 @@
+import {currentUser,deny} from '../../../../lib/server/auth';
+import {db} from '../../../../lib/server/db';
+export const runtime='nodejs';
+export async function GET(_req:Request,{params}:{params:Promise<{id:string}>}){const user=await currentUser();if(!user)return deny();const {id}=await params;if(!/^[0-9a-f-]{36}$/i.test(id))return new Response(null,{status:404});const {rows}=await db().query('SELECT content,content_type FROM images WHERE id=$1 AND user_id=$2',[id,user.id]);if(!rows.length)return new Response(null,{status:404});return new Response(new Uint8Array(rows[0].content),{headers:{'Content-Type':'image/jpeg','Cache-Control':'private, max-age=300','X-Content-Type-Options':'nosniff'}})}
+export async function DELETE(_req:Request,{params}:{params:Promise<{id:string}>}){const user=await currentUser();if(!user)return deny();const {id}=await params;if(!/^[0-9a-f-]{36}$/i.test(id))return new Response(null,{status:404});await db().query('DELETE FROM images WHERE id=$1 AND user_id=$2',[id,user.id]);return Response.json({ok:true})}
