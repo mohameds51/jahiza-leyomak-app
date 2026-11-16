@@ -34,3 +34,15 @@ Node.js 20+; PostgreSQL (Neon); a verified sender domain and Resend API key; com
 - Test email delivery and link expiry, Paddle sandbox payment and refunds, image upload/restore across devices, multi-device conflict, mobile layouts, and failed-network saves.
 - The five tools are functional but their suggested content and timing need editorial review by the product owner before accepting real customers.
 - Legal pages, privacy/retention policy, refund terms, customer support contact, checkout UI, and production deployment must be completed before selling.
+
+
+## V3 notes
+- Image upload API removed. Legacy `jahiza-looks-v1` state remains stored for safe backward compatibility; it is not displayed or newly uploaded. Do not delete old images or DB tables without a separate consented migration.
+- New textual bookings use `jahiza-bookings-v1` inside existing `user_state` JSON; no SQL migration required.
+- Run `npm install`, `npm test`, `npm run typecheck`, `npm run build` before production deployment. Verify live login, Paddle purchase, and Neon sync with staging accounts.
+
+## Content update — detailed bridal preparation journey
+
+The planner now includes 49 structured milestones across venue/vendor coordination, budgeting and balances, bridal look, attire, transport, guest confirmations, care, packing, privacy, handoffs, and wedding-day operations. Every milestone includes three actionable steps and a defined outcome. Tasks that do not apply to a particular celebration may be deleted manually. The listed minutes estimate *planning/admin time*, not the duration of an appointment or service. Existing plans are upgraded by adding missing base milestones without overwriting previous task completion, dates, custom tasks, or recorded outcomes. The onboarding remains unchanged, so this is not yet a fully conditional plan based on a detailed wedding-type questionnaire.
+
+This update does not alter authentication, database schema, payment integration, or the sales landing page. Verify a production build and test the state-sync flow with a staging account before deploying to customers. Bridal care tips are organizational and do not replace advice from a qualified professional.
